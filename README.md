@@ -1,9 +1,12 @@
 # calendar
 
-Portable CLJC calendar model for `calendar.gftd.ai`.
+[![CI](https://github.com/kotoba-lang/calendar/actions/workflows/ci.yml/badge.svg)](https://github.com/kotoba-lang/calendar/actions/workflows/ci.yml)
 
-Events are plain EDN with deterministic time windows, attendees, resources, and
-links to docs, slides, drive files, or forms.
+Portable CLJC model for kotoba-lang/calendar.
+
+Pages editor: https://kotoba-lang.github.io/calendar/
+
+The Pages UI is local to kotoba-lang and does not redirect to external hosts.
 
 ## Test
 

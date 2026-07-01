@@ -11,5 +11,5 @@ The Pages UI is local to kotoba-lang and does not redirect to external hosts.
 ## Test
 
 ```bash
-clojure -X:test
+clojure -M:test
 ```

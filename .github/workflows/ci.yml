@@ -15,3 +15,18 @@ jobs:
       - run: clojure -M:test
 
       - run: clojure -M:lint
+
+      - name: Compile bounded calendar for Web and Wasm
+        run: |
+          mkdir -p target/kotoba
+          clojure -M:kotoba compile test/calendar/conformance.kotoba --source-path src \
+            --target js-browser --output target/kotoba/calendar.mjs
+          clojure -M:kotoba compile test/calendar/conformance.kotoba --source-path src \
+            --target wasm32-browser --output target/kotoba/calendar.wasm
+
+      - name: Execute bounded calendar conformance
+        run: |
+          compiler_src="$(clojure -Spath -M:kotoba | tr ':' '\n' | grep '/compiler/' | head -1)"
+          test -n "$compiler_src"
+          node scripts/verify-kotoba.mjs target/kotoba/calendar.mjs \
+            target/kotoba/calendar.wasm "$(dirname "$compiler_src")/runtime/browser-host.mjs"

@@ -13,7 +13,16 @@
         invalid (model/new-event :invalid 200 200)
         calendar (model/add-event
                    (model/add-event (model/new-calendar :gftd-calendar) briefing)
-                   review)]
+                   review)
+        c1 (model/add-event (model/new-calendar :limit) (model/new-event :e1 1 2))
+        c2 (model/add-event c1 (model/new-event :e2 2 3))
+        c3 (model/add-event c2 (model/new-event :e3 3 4))
+        c4 (model/add-event c3 (model/new-event :e4 4 5))
+        c5 (model/add-event c4 (model/new-event :e5 5 6))
+        c6 (model/add-event c5 (model/new-event :e6 6 7))
+        c7 (model/add-event c6 (model/new-event :e7 7 8))
+        c8 (model/add-event c7 (model/new-event :e8 8 9))
+        overflow (model/add-event c8 (model/new-event :e9 9 10))]
     (if (= 2 (model/events-count calendar))
       (if (validate/valid? calendar)
         (if (model/overlaps? briefing review)
@@ -33,7 +42,9 @@
                             (model/event-by-id replaced :weekly-briefing) event-option-type
                             (none 7)
                             (some updated
-                              (if (= 300 (record-get event-type updated :start)) 42 8)))
+                              (if (= 300 (record-get event-type updated :start))
+                                (if (validate/valid? overflow) 11 42)
+                                8)))
                           9)))
                     (some unexpected 10))
                   6))))

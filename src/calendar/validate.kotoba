@@ -26,4 +26,7 @@
           false)))))
 
 (defn valid? [calendar [:alias calendar-type]] :bool
-  (valid-events-loop (record-get calendar-type calendar :events) 0))
+  (let [events (record-get calendar-type calendar :events)
+        count (typed-map-count events-type events)]
+    (if (< 8 count) false
+      (valid-events-loop events 0))))

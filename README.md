@@ -5,7 +5,7 @@
 Portable CLJC model for kotoba-lang/calendar.
 
 The bounded Kotoba profile lives in `src/calendar/model.kotoba` and
-`src/calendar/validate.kotoba`. It represents at most 31 nominal events with
+`src/calendar/validate.kotoba`. It represents at most 8 nominal events with
 keyword IDs and signed-i64 time coordinates. Updates are persistent, event
 duration must be positive, and the closed graph requires no host capability.
 The open-schema CLJC model remains authoritative for ISO time strings, titles,

@@ -1,0 +1,42 @@
+(ns calendar.conformance
+  (:require [calendar.model :as model]
+            [calendar.validate :as validate])
+  (:export [main]))
+
+(def event-type
+  [:record :calendar/event [[:id :keyword] [:start :i64] [:end :i64]]])
+(def event-option-type [:option [:alias event-type]])
+
+(defn main [] :i64
+  (let [briefing (model/new-event :weekly-briefing 100 130)
+        review (model/new-event :review 120 150)
+        invalid (model/new-event :invalid 200 200)
+        calendar (model/add-event
+                   (model/add-event (model/new-calendar :gftd-calendar) briefing)
+                   review)]
+    (if (= 2 (model/events-count calendar))
+      (if (validate/valid? calendar)
+        (if (model/overlaps? briefing review)
+          (if (validate/event-valid? invalid) 4
+            (match-option
+              (model/event-by-id calendar :weekly-briefing) event-option-type
+              (none 5)
+              (some found
+                (if (= 100 (record-get event-type found :start))
+                  (match-option
+                    (model/event-by-id calendar :missing) event-option-type
+                    (none
+                      (let [replaced (model/add-event calendar
+                                       (model/new-event :weekly-briefing 300 330))]
+                        (if (= 2 (model/events-count replaced))
+                          (match-option
+                            (model/event-by-id replaced :weekly-briefing) event-option-type
+                            (none 7)
+                            (some updated
+                              (if (= 300 (record-get event-type updated :start)) 42 8)))
+                          9)))
+                    (some unexpected 10))
+                  6))))
+          3)
+        2)
+      1)))

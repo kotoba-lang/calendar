@@ -1,0 +1,18 @@
+{:schema "kotoba-calendar-migration/v1"
+ :profile :calendar/bounded-events-v1
+ :legacy {:model "src/calendar/model.cljc"
+          :validation "src/calendar/validate.cljc"
+          :status :retained-open-schema-oracle}
+ :canonical {:model "src/calendar/model.kotoba"
+             :validation "src/calendar/validate.kotoba"
+             :conformance "test/calendar/conformance.kotoba"}
+ :domain {:calendar-id :keyword :event-id :keyword :time :i64
+          :maximum-events 31 :ordering :strict-start-before-end}
+ :excluded [:arbitrary-iso-time-strings :titles :attendees :resource-links]
+ :safety {:ambient-authority false :host-capabilities []
+          :mutable-state false :open-maps false :silent-domain-narrowing false}
+ :verification {:legacy {:tests 1 :assertions 3 :failures 0 :errors 0}
+                :project-digest "a66fd29e89018b317cc304d49978a35e595f4c04a4ef34fcbd26a7ec793bc351"
+                :web {:main 42 :artifact-sha256 "e45604c99c529564673d62009296b08c461cd0efd0b50ba589da4c7ccbbff804"}
+                :wasm {:main 42 :artifact-sha256 "9838cb0926d9f4b33d4cfc0133ffa664245a4b4a9e0c0133216f62fa50dd7fde"}}
+ :cutover {:bounded-profile-authorized true :generic-cljc-retained true}}

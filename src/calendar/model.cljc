@@ -13,10 +13,14 @@
           :calendar/title id
           :calendar/start nil
           :calendar/end nil
+          :calendar/organizer nil
           :calendar/attendees []
           :calendar/rsvp {}
           :calendar/links []}
          attrs))
+
+(defn organized-by? [ev person-id]
+  (and (some? person-id) (= person-id (:calendar/organizer ev))))
 
 (defn add-event [cal ev]
   (assoc-in cal [:calendar/events (:calendar/id ev)] ev))

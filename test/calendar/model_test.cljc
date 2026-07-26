@@ -43,6 +43,13 @@
         "only RFC 5545 PARTSTAT values this model declares are storable")
     (is (= base (c/respond base "no-such-event" "person:jun" :accepted)))))
 
+(deftest organizer-is-a-declared-slot
+  (let [ev (c/event "a" {:calendar/organizer "person:jun"})]
+    (is (c/organized-by? ev "person:jun"))
+    (is (not (c/organized-by? ev "person:aoi")))
+    (is (not (c/organized-by? (c/event "b" {}) nil))
+        "an event with no organizer is not organized by an anonymous caller")))
+
 (deftest conflicts-ignore-declined-events-and-the-candidate-itself
   (let [cal (-> (c/calendar "cal")
                 (c/add-event (c/event "standup" {:calendar/start "2026-01-01T00:00:00Z"

@@ -11,6 +11,22 @@ duration must be positive, and the closed graph requires no host capability.
 The open-schema CLJC model remains authoritative for ISO time strings, titles,
 attendees, and resource links; those domains are not silently narrowed.
 
+## The overlap rule runs from the shipped Kotoba core
+
+`overlaps?` is decided by `src/calendar/model.kotoba`, compiled to
+`resources/calendar/oracle/model.kir.edn` and executed through
+`calendar.kotoba-oracle`. `model.cljc/overlaps?` reads the two maps, refuses an
+absent instant (`:i64` has no absence), ranks the four instants into the
+guest's domain, and calls it — it does not compute the rule. A missing
+artifact throws rather than falling back.
+
+`kotoba-lang/kotoba-kir` is therefore a runtime dependency, pinned to the kir
+the pinned compiler emits for. The compiler itself stays test-only.
+
+```bash
+clojure -M:test:gen   # regenerate resources/calendar/oracle/model.kir.edn
+```
+
 Pages editor: https://kotoba-lang.github.io/calendar/
 
 The Pages UI is local to kotoba-lang and does not redirect to external hosts.

@@ -1,7 +1,27 @@
 (ns calendar.overlaps-parity-test
-  "Binds `model.kotoba/overlaps?` to `model.cljc/overlaps?`.
+  "The truth table for `overlaps?`, and the check that both targets compile it
+  to the same KIR.
 
-  ## Why this exists
+  ## What this test means NOW, which is not what it meant when it was written
+
+  It was written to bind two implementations: `model.kotoba/overlaps?` and a
+  `model.cljc/overlaps?` that computed the same rule itself, and it was
+  written because they disagreed. There is no second implementation left —
+  `model.cljc/overlaps?` reads two maps, ranks the instants, and calls the
+  shipped core. So every assertion below that compares the two sides is now
+  comparing a FRESH compile of `src/calendar/model.kotoba` against the SHIPPED
+  compile of the same file, through the host's argument marshalling.
+
+  That is worth keeping, and not only for sentiment. It is the truth table:
+  1,296 span pairs, symmetry, irreflexivity for empty events, the half-open
+  boundary, and the nil handling the guest cannot express — stated as rules a
+  reader can check rather than as a diff of two files. What it can no longer
+  do on its own is notice a host that quietly kept a copy of the rule, because
+  a host copy is exactly what it was built to compare against. That check
+  lives in `calendar.kotoba-oracle-test`, and this namespace is only honest
+  next to it.
+
+  ## Why the two disagreed, kept because it is why the rule reads as it does
 
   They disagreed. The `.kotoba` requires each event to occupy time —
   `(< start end)` for both, before any comparison — and the `.cljc` did not.
@@ -31,16 +51,31 @@
   (:require [calendar.model :as model]
             [clojure.test :refer [deftest is testing]]
             [kotoba.compiler.core :as compiler]
-            ;; At this repo's compiler pin the interpreter still lives inside
-            ;; the compiler as `kotoba.compiler.ir`; it moved out to
-            ;; `kotoba-lang/kotoba-kir` later (ADR-2607266000 Phase B). Named
-            ;; here so a pin advance that breaks this require reads as "the
-            ;; interpreter moved", not as "the test is wrong".
-            [kotoba.compiler.ir :as ir]))
+            ;; The interpreter used to live inside the compiler as
+            ;; `kotoba.compiler.ir`; it moved out to `kotoba-lang/kotoba-kir`
+            ;; in ADR-2607266000 Phase B, which is what lets `src/` run the
+            ;; shipped artifact without the compiler. Same namespace the
+            ;; library uses at runtime, so this table measures the interpreter
+            ;; that ships.
+            [kotoba.kir :as ir]))
+
+(def ^:private targets
+  "Both portable targets, because the shipped artifact is compiled for exactly
+  one of them (`kotoba-oracle-gen/target`) and that choice must not be able to
+  change an answer."
+  [:js-kotoba-v1 :wasm32-kotoba-v1])
 
 (def ^:private compiled
   (delay (:kir (compiler/compile-source (slurp "src/calendar/model.kotoba")
                                         :js-kotoba-v1))))
+
+(deftest both-targets-lower-to-the-same-kir
+  ;; `kotoba-oracle-gen` picks one target for the artifact. If the two ever
+  ;; diverged, that pick would silently become a decision about behaviour.
+  (let [source (slurp "src/calendar/model.kotoba")
+        kirs (mapv #(:kir (compiler/compile-source source %)) targets)]
+    (doseq [k kirs] (is (some? k)))
+    (is (apply = kirs) (str "targets disagree: " targets))))
 
 (def ^:private event-type
   "Spelled as `model.kotoba` declares it, so a change of shape fails loudly

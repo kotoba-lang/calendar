@@ -1,5 +1,5 @@
 (ns calendar.kotoba-oracle-gen
-  "Regenerate the shipped KIR from `src/calendar/model.kotoba`.
+  "Regenerate the shipped KIR from every core in `oracle/cores`.
 
       clojure -M:test:gen
 
@@ -7,7 +7,12 @@
   library. What it writes IS what production loads, so nothing here transforms
   it: same compile call as the drift test, pretty-printed EDN, no
   post-processing. If this file and that test disagreed about how to compile,
-  the test would be checking something other than what ships."
+  the test would be checking something other than what ships.
+
+  The subject list is `oracle/cores`, which is also what the drift gate walks
+  and what `every-core-in-src-is-declared` holds against the directory. One
+  list, three uses: a core cannot be regenerated but ungated, or gated but
+  never regenerated."
   (:require [clojure.java.io :as io]
             [clojure.pprint :as pp]
             [calendar.kotoba-oracle :as oracle]

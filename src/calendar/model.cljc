@@ -88,11 +88,6 @@
        (sort-by (juxt :calendar/start :calendar/id))
        vec))
 
-(def ^:private event-type
-  "Spelled as `model.kotoba` declares it. A change of shape there makes the
-  call below fail to match rather than be followed silently."
-  [:record :calendar/event [[:id :keyword] [:start :i64] [:end :i64]]])
-
 (def ^:private placeholder-ids
   "`:calendar/event` carries an `:id` the overlap rule never reads, and the
   guest requires the field to be present and a `:keyword`. This repository's
@@ -100,32 +95,15 @@
   field nobody looks at. Two distinct constants say that plainly."
   [:a :b])
 
-(defn- instant-ranks
-  "An order-preserving embedding of `instants` into the `:i64` the guest
-  speaks: each value's rank is how many of them compare strictly below it.
-
-  Only `compare` is consulted, which is the ordering this namespace has always
-  used, and rank is monotone in it — `rank x < rank y` exactly when
-  `(neg? (compare x y))`. So the guest's four comparisons get the same answers
-  they would have got on the instants themselves, whether those are the
-  ISO-8601 strings this model stores or the integers a test hands it. This is
-  not the rule; it is putting the rule's inputs into its domain.
-
-  One consequence worth naming: ranking asks `compare` about every pair, where
-  the old inline conjunction stopped at the first guard that failed. Instants
-  that cannot be compared with each other now throw where a malformed event
-  could previously short-circuit to `false`. Both are refusals of the same
-  data; homogeneous instants — everything this model produces — are unaffected."
-  [instants]
-  (mapv (fn [x] (count (filter #(neg? (compare % x)) instants))) instants))
-
 (defn overlaps?
   "Do `a` and `b` occupy a common instant?
 
   The rule is `model.kotoba/overlaps?`, executed from
   `resources/calendar/oracle/model.kir.edn`; this function does not compute
   it. What is left here is what is not a decision: reading the two maps,
-  refusing an absent instant, and ranking the four instants into `:i64`.
+  refusing an absent instant, and ranking the four instants into `:i64`
+  (`kotoba-oracle/instant-ranks`, shared with `validate.cljc` because putting
+  an instant into the guest's domain is the seam's job, not a rule).
 
   Absence is the one thing the guest cannot express — `:i64` has no `nil` —
   so it stays here. An event missing either end has not said when it happens,
@@ -144,11 +122,11 @@
         bs (:calendar/start b) be (:calendar/end b)]
     (if-not (and as ae bs be)
       false
-      (let [[as* ae* bs* be*] (instant-ranks [as ae bs be])
+      (let [[as* ae* bs* be*] (oracle/instant-ranks [as ae bs be])
             [a-id b-id] placeholder-ids]
         (oracle/call :model 'overlaps?
-                     [(oracle/record event-type [a-id as* ae*])
-                      (oracle/record event-type [b-id bs* be*])])))))
+                     [(oracle/record oracle/event-type [a-id as* ae*])
+                      (oracle/record oracle/event-type [b-id bs* be*])])))))
 
 (defn conflicts
   "Events that `person-id` has already accepted (or not yet answered) which

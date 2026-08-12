@@ -1,4 +1,5 @@
-(ns calendar.model)
+(ns calendar.model
+  (:require [calendar.kotoba-oracle :as oracle]))
 
 (defn calendar
   ([id] (calendar id {}))
@@ -87,31 +88,67 @@
        (sort-by (juxt :calendar/start :calendar/id))
        vec))
 
+(def ^:private event-type
+  "Spelled as `model.kotoba` declares it. A change of shape there makes the
+  call below fail to match rather than be followed silently."
+  [:record :calendar/event [[:id :keyword] [:start :i64] [:end :i64]]])
+
+(def ^:private placeholder-ids
+  "`:calendar/event` carries an `:id` the overlap rule never reads, and the
+  guest requires the field to be present and a `:keyword`. This repository's
+  ids are strings, so passing the real ones would mean converting data for a
+  field nobody looks at. Two distinct constants say that plainly."
+  [:a :b])
+
+(defn- instant-ranks
+  "An order-preserving embedding of `instants` into the `:i64` the guest
+  speaks: each value's rank is how many of them compare strictly below it.
+
+  Only `compare` is consulted, which is the ordering this namespace has always
+  used, and rank is monotone in it — `rank x < rank y` exactly when
+  `(neg? (compare x y))`. So the guest's four comparisons get the same answers
+  they would have got on the instants themselves, whether those are the
+  ISO-8601 strings this model stores or the integers a test hands it. This is
+  not the rule; it is putting the rule's inputs into its domain.
+
+  One consequence worth naming: ranking asks `compare` about every pair, where
+  the old inline conjunction stopped at the first guard that failed. Instants
+  that cannot be compared with each other now throw where a malformed event
+  could previously short-circuit to `false`. Both are refusals of the same
+  data; homogeneous instants — everything this model produces — are unaffected."
+  [instants]
+  (mapv (fn [x] (count (filter #(neg? (compare % x)) instants))) instants))
+
 (defn overlaps?
   "Do `a` and `b` occupy a common instant?
 
-  Each event must occupy time at all. An event whose start is not before its
-  end is empty — under half-open `[start, end)` an empty interval intersects
-  nothing, and an inverted one is malformed data whose intersection with
-  anything is not a question worth answering `true`.
+  The rule is `model.kotoba/overlaps?`, executed from
+  `resources/calendar/oracle/model.kir.edn`; this function does not compute
+  it. What is left here is what is not a decision: reading the two maps,
+  refusing an absent instant, and ranking the four instants into `:i64`.
 
-  This guard used to be missing here, while `validate/event-problems` reported
-  the same events as `:event/non-positive-duration` errors and
-  `model.kotoba/overlaps?` refused them outright. So the two implementations
-  of this rule disagreed, and the one that ran was the permissive one: a
-  zero-length event at 10 was reported as conflicting with a meeting from 0 to
-  100, and an inverted event conflicted with things it does not span at all.
-  `conflicts` calls straight through here, so nothing required an event to
-  have been validated first. `overlaps-parity-test` now binds the two."
+  Absence is the one thing the guest cannot express — `:i64` has no `nil` —
+  so it stays here. An event missing either end has not said when it happens,
+  and a thing that has not said when it happens is not concurrent with
+  anything.
+
+  The rule itself, for a reader who wants it stated rather than fetched: each
+  event must occupy time at all, and under half-open `[start, end)` an empty
+  interval intersects nothing. That guard used to be missing from this side
+  while `validate/event-problems` reported the same events as
+  `:event/non-positive-duration` and `model.kotoba/overlaps?` refused them
+  outright — so the two implementations of this rule disagreed and the one
+  that ran was the permissive one. There is now one implementation."
   [a b]
   (let [as (:calendar/start a) ae (:calendar/end a)
         bs (:calendar/start b) be (:calendar/end b)]
-    (boolean
-     (and as ae bs be
-          (neg? (compare as ae))
-          (neg? (compare bs be))
-          (neg? (compare as be))
-          (neg? (compare bs ae))))))
+    (if-not (and as ae bs be)
+      false
+      (let [[as* ae* bs* be*] (instant-ranks [as ae bs be])
+            [a-id b-id] placeholder-ids]
+        (oracle/call :model 'overlaps?
+                     [(oracle/record event-type [a-id as* ae*])
+                      (oracle/record event-type [b-id bs* be*])])))))
 
 (defn conflicts
   "Events that `person-id` has already accepted (or not yet answered) which

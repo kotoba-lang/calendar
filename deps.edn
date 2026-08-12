@@ -1,24 +1,55 @@
 {:paths ["src" "resources"]
- :deps {}
+ :deps
+ {;; The KIR interpreter is a RUNTIME dependency: `calendar.kotoba-oracle`
+  ;; executes the shipped `resources/calendar/oracle/model.kir.edn` through
+  ;; it, so the decision in `src/calendar/model.kotoba` is what this library
+  ;; runs rather than what a test compares against. The COMPILER stays
+  ;; test-only (see the :test alias) -- it produced that artifact and never
+  ;; reaches production.
+  ;;
+  ;; Pinned to the kir the pinned compiler emits for: `d58972da` is the sha
+  ;; `compiler/806f5cef`'s own deps.edn names. They have to match. KIR is a
+  ;; versioned document, and an interpreter reading a shape its emitter did
+  ;; not write is exactly the failure the artifact was supposed to remove, so
+  ;; advancing one of these two pins without the other is not a smaller
+  ;; change than advancing neither.
+  io.github.kotoba-lang/kotoba-kir
+  {:git/url "https://github.com/kotoba-lang/kotoba-kir.git"
+   :git/sha "d58972da61758584a5bec0e863bcb3ea6fdd6c64"}}
  :aliases
- {:test {:extra-paths ["test"]
-         ;; The compiler is TEST-ONLY, for `overlaps-parity-test`: it compiles
-         ;; `src/calendar/model.kotoba` and runs it against the `.cljc` over the
-         ;; same inputs. Nothing in `src/` requires it, so this cannot change
-         ;; what the library does -- same split the :kotoba alias already had,
-         ;; which only ever ran the CLI from CI.
+ {;; Regenerate the shipped decision-core KIR. Combine with :test, which
+  ;; carries the compiler; a later alias's :main-opts wins:
+  ;;
+  ;;   clojure -M:test:gen
+  :gen {:main-opts ["-m" "calendar.kotoba-oracle-gen"]}
+  :test {:extra-paths ["test"]
+         ;; The compiler is TEST-ONLY: it compiles `src/calendar/model.kotoba`
+         ;; for the drift check in `kotoba-oracle-test` and for the truth
+         ;; table in `overlaps-parity-test`. Nothing in `src/` requires it --
+         ;; `src/` requires `kotoba.kir`, which is a runtime dep above -- so
+         ;; this cannot change what the library does.
+         ;;
+         ;; Advanced from `bef32b78` (2026-07-19) to `806f5cef` (2026-08-11,
+         ;; the commit `manifest/west.yml` pins) for one reason: at `bef32b78`
+         ;; the interpreter still lived INSIDE the compiler as
+         ;; `kotoba.compiler.ir`, so running the shipped artifact would have
+         ;; put the whole compiler on the library's runtime classpath. It
+         ;; moved out to `kotoba-lang/kotoba-kir` in ADR-2607266000 Phase B,
+         ;; which is what makes a runtime-interpreter/test-only-compiler split
+         ;; expressible at all. Measured at `bef32b78`: `kotoba-kir` is not on
+         ;; the `:test` classpath in any form.
          :extra-deps {io.github.cognitect-labs/test-runner
                       {:git/tag "v0.5.1" :git/sha "dfb30dd"}
                       io.github.kotoba-lang/compiler
                       {:git/url "https://github.com/kotoba-lang/compiler.git"
-                       ;; Same pin the :kotoba alias uses, so the gate measures
-                       ;; the compiler this repo actually ships against.
-                       :git/sha "bef32b78852212bc096849d1ff9779c8afae4796"}}
+                       :git/sha "806f5cef7d5bc11ad8ec8514ad6121efc73be6c7"}}
          :main-opts ["-m" "cognitect.test-runner"]
          :exec-fn cognitect.test-runner.api/test}
   :kotoba {:extra-deps {io.github.kotoba-lang/compiler
                         {:git/url "https://github.com/kotoba-lang/compiler.git"
-                         :git/sha "bef32b78852212bc096849d1ff9779c8afae4796"}}
+                         ;; Same pin the :test alias uses, so the CLI compiles
+                         ;; with the compiler that produced the artifact.
+                         :git/sha "806f5cef7d5bc11ad8ec8514ad6121efc73be6c7"}}
            :main-opts ["-m" "kotoba.compiler.cli"]}
   ;; clj-kondo as a Clojars lib (no Homebrew/system install needed).
   :lint {:replace-deps {clj-kondo/clj-kondo {:mvn/version "2024.11.14"}}

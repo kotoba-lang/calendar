@@ -87,11 +87,31 @@
        (sort-by (juxt :calendar/start :calendar/id))
        vec))
 
-(defn overlaps? [a b]
-  (and (:calendar/start a) (:calendar/end a)
-       (:calendar/start b) (:calendar/end b)
-       (neg? (compare (:calendar/start a) (:calendar/end b)))
-       (neg? (compare (:calendar/start b) (:calendar/end a)))))
+(defn overlaps?
+  "Do `a` and `b` occupy a common instant?
+
+  Each event must occupy time at all. An event whose start is not before its
+  end is empty — under half-open `[start, end)` an empty interval intersects
+  nothing, and an inverted one is malformed data whose intersection with
+  anything is not a question worth answering `true`.
+
+  This guard used to be missing here, while `validate/event-problems` reported
+  the same events as `:event/non-positive-duration` errors and
+  `model.kotoba/overlaps?` refused them outright. So the two implementations
+  of this rule disagreed, and the one that ran was the permissive one: a
+  zero-length event at 10 was reported as conflicting with a meeting from 0 to
+  100, and an inverted event conflicted with things it does not span at all.
+  `conflicts` calls straight through here, so nothing required an event to
+  have been validated first. `overlaps-parity-test` now binds the two."
+  [a b]
+  (let [as (:calendar/start a) ae (:calendar/end a)
+        bs (:calendar/start b) be (:calendar/end b)]
+    (boolean
+     (and as ae bs be
+          (neg? (compare as ae))
+          (neg? (compare bs be))
+          (neg? (compare as be))
+          (neg? (compare bs ae))))))
 
 (defn conflicts
   "Events that `person-id` has already accepted (or not yet answered) which

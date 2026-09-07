@@ -309,11 +309,11 @@
   ;; agreement is asserted here rather than described in a `deps.edn` comment,
   ;; because a comment cannot fail.
   (let [ours (-> (edn/read-string (slurp "deps.edn"))
-                 (get-in [:deps 'io.github.kotoba-lang/kotoba-kir :git/sha]))
+                 (get-in [:deps 'io.github.kotoba-lang/osaho :git/sha]))
         compiler-root (-> (io/resource "kotoba/compiler/core.clj")
                           .getPath (str/replace #"/src/kotoba/compiler/core\.clj$" ""))
         theirs (-> (io/file compiler-root "deps.edn") slurp edn/read-string
-                   (get-in [:deps 'io.github.kotoba-lang/kotoba-kir :git/sha]))]
+                   (get-in [:deps 'io.github.kotoba-lang/osaho :git/sha]))]
     (is (string? ours))
     (is (string? theirs) (str "no kotoba-kir pin found under " compiler-root))
     (is (= theirs ours)

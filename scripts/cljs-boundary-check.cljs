@@ -25,7 +25,7 @@
   (:require ["child_process" :as cp]
             ["fs" :as fs]
             [clojure.edn :as edn]
-            [clojure.string :as str]))
+            [kotoba.lang.text :as str]))
 
 (def classpath
   (-> (cp/execSync "clojure -Spath" #js {:encoding "utf8"})

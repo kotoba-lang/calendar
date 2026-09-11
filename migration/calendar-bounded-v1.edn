@@ -1,7 +1,7 @@
 {:schema "kotoba-calendar-migration/v1"
  :profile :calendar/bounded-events-v1
- :legacy {:model "src/calendar/model.cljc"
-          :validation "src/calendar/validate.cljc"
+ :legacy {:model "src/calendar/model.cljk"
+          :validation "src/calendar/validate.cljk"
           :status :retained-open-schema-oracle}
  :canonical {:model "src/calendar/model.kotoba"
              :validation "src/calendar/validate.kotoba"

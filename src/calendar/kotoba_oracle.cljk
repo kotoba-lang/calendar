@@ -213,7 +213,7 @@
   So `model.cljc/overlaps?` — delegated the day before — threw on every call
   on ClojureScript, while the JVM suite was green. The JVM suite is
   structurally unable to see this: `(long n)` and `n` are the same value
-  there. `scripts/cljs-boundary-check.cljs` is the reproduction, and it is
+  there. `scripts/cljs-boundary-check.cljk` is the reproduction, and it is
   the only thing in this repository that can fail for this reason.
 
   There is no inverse here because no export returns `:i64` — `overlaps?` and

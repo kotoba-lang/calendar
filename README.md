@@ -38,7 +38,7 @@ are for, not a step that has not been taken.
 ## The ClojureScript boundary is not the JVM one
 
 ```bash
-nbb scripts/cljs-boundary-check.cljs
+nbb scripts/cljs-boundary-check.cljk
 ```
 
 A `:i64` field inside a record must be a `js/BigInt` on ClojureScript; a

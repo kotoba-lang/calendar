@@ -1,7 +1,7 @@
 #!/usr/bin/env nbb
 ;; Does the delegation work on ClojureScript?
 ;;
-;;     nbb scripts/cljs-boundary-check.cljs      # from the repo root
+;;     nbb scripts/cljs-boundary-check.cljk      # from the repo root
 ;;
 ;; `clojure -M:test` cannot answer this and never will. The guest ABI is not
 ;; the same on the two runtimes: `kir/execute` coerces a top-level `:i64`

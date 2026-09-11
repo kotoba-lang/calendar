@@ -25,7 +25,7 @@
  {;; Regenerate the shipped decision-core KIR. Combine with :test, which
   ;; carries the compiler; a later alias's :main-opts wins:
   ;;
-  ;;   clojure -M:test:gen
+  ;;   kbb -M:test:gen
   :gen {:main-opts ["-m" "calendar.kotoba-oracle-gen"]}
   :test {:extra-paths ["test"]
          ;; The compiler is TEST-ONLY: it compiles `src/calendar/model.kotoba`

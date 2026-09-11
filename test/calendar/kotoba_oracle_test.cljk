@@ -42,7 +42,7 @@
 
   Lowering introduces names of the form `or-tmp__11099`, and the number comes
   from a counter that is per-process, not per-source. So the shipped artifact
-  — written by `clojure -M:test:gen` in one JVM — and a fresh compile in this
+  — written by `kbb -M:test:gen` in one JVM — and a fresh compile in this
   JVM can be the same program under different numbers, and a raw `=` between
   them would fail for a reason that is not drift. Renumbering by first
   appearance removes exactly that difference and no other: two programs that
@@ -73,7 +73,7 @@
             fresh (:kir (compiler/compile-source (slurp (io/file "src" source))
                                                  gen/target {}))]
         (is (= (renumber-gensyms fresh) (renumber-gensyms shipped))
-            (str "shipped KIR for " id " is stale — run `clojure -M:test:gen`"))))))
+            (str "shipped KIR for " id " is stale — run `kbb -M:test:gen`"))))))
 
 (deftest every-declared-core-actually-ships
   (doseq [id (keys oracle/cores)]

@@ -38,12 +38,12 @@ are for, not a step that has not been taken.
 ## The ClojureScript boundary is not the JVM one
 
 ```bash
-nbb scripts/cljs-boundary-check.cljk
+kbb --backend sci scripts/cljs-boundary-check.cljk
 ```
 
 A `:i64` field inside a record must be a `js/BigInt` on ClojureScript; a
 `js/Number` is rejected. On the JVM the two are the same value, so
-`clojure -M:test` cannot see the difference and a host that forgot the
+`kbb -M:test` cannot see the difference and a host that forgot the
 conversion stays green there. It happened: `overlaps?` threw
 `value is not a signed i64` on every ClojureScript call for a day. The seam
 converts (`kotoba-oracle/i64`) and the script above is what fails if it
@@ -54,7 +54,7 @@ the pinned compiler emits for — a test asserts the two pins are the pair the
 compiler itself declares. The compiler stays test-only.
 
 ```bash
-clojure -M:test:gen   # regenerate resources/calendar/oracle/*.kir.edn
+kbb -M:test:gen   # regenerate resources/calendar/oracle/*.kir.edn
 ```
 
 Pages editor: https://kotoba-lang.github.io/calendar/
@@ -64,5 +64,5 @@ The Pages UI is local to kotoba-lang and does not redirect to external hosts.
 ## Test
 
 ```bash
-clojure -M:test
+kbb -M:test
 ```

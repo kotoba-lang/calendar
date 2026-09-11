@@ -1,9 +1,9 @@
-#!/usr/bin/env nbb
+#!/usr/bin/env kbb
 ;; Does the delegation work on ClojureScript?
 ;;
-;;     nbb scripts/cljs-boundary-check.cljk      # from the repo root
+;;     kbb --backend sci scripts/cljs-boundary-check.cljk      # from the repo root
 ;;
-;; `clojure -M:test` cannot answer this and never will. The guest ABI is not
+;; `kbb -M:test` cannot answer this and never will. The guest ABI is not
 ;; the same on the two runtimes: `kir/execute` coerces a top-level `:i64`
 ;; argument and accepts a host integer for it, but a `:i64` FIELD INSIDE A
 ;; RECORD goes through `value/bounded-typed-value!`, which requires a
@@ -17,7 +17,7 @@
 ;; `value is not a signed i64` on every call under nbb.
 ;;
 ;; This runs on the same `.cljc` sources the library ships and the same
-;; interpreter `deps.edn` pins, resolved through `clojure -Spath` so it cannot
+;; interpreter `deps.edn` pins, resolved through `kbb -Spath` so it cannot
 ;; drift from the pin. It is deliberately a script rather than a test: nothing
 ;; in this repository runs ClojureScript, and pretending otherwise by wiring
 ;; it into a JVM suite would mean it never actually executed.
@@ -28,7 +28,7 @@
             [kotoba.lang.text :as str]))
 
 (def classpath
-  (-> (cp/execSync "clojure -Spath" #js {:encoding "utf8"})
+  (-> (cp/execSync "kbb -Spath" #js {:encoding "utf8"})
       str/trim))
 
 (def failures (atom []))
@@ -68,11 +68,11 @@
         out (str "/tmp/calendar-cljs-boundary-" (.getTime (js/Date.)) ".cljs")]
     (fs/writeFileSync out probe)
     (try
-      (let [result (-> (cp/execSync (str "nbb --classpath '" classpath "' " out)
+      (let [result (-> (cp/execSync (str "kbb --backend sci --classpath '" classpath "' " out)
                                     #js {:encoding "utf8"})
                        str/trim
                        edn/read-string)]
-        (println "ClojureScript (nbb), interpreter from `clojure -Spath`:")
+        (println "ClojureScript (nbb), interpreter from `kbb -Spath`:")
         (check! "two events sharing an instant overlap" true (:overlapping result))
         (check! "disjoint events do not" false (:disjoint result))
         (check! "half-open: touching events do not" false (:touching result))

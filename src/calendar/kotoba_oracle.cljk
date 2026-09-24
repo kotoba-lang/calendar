@@ -35,7 +35,7 @@
   to appear in `cores`, and every export of every core has to appear in
   either `delegated` or `host-answered` — so an export cannot be added, or a
   delegation dropped, without something failing."
-  (:require [clojure.edn :as edn]
+  (:require [kotoba.lang.edn :as edn]
             [kotoba.kir :as ir]
             #?(:clj [clojure.java.io :as io])))
 

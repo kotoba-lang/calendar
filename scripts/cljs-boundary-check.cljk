@@ -24,7 +24,7 @@
 (ns cljs-boundary-check
   (:require ["child_process" :as cp]
             ["fs" :as fs]
-            [clojure.edn :as edn]
+            [kotoba.lang.edn :as edn]
             [kotoba.lang.text :as str]))
 
 (def classpath

@@ -1,5 +1,5 @@
 (ns calendar.model-test
-  (:require [clojure.test :refer [deftest is]]
+  (:require [kotoba.test :refer [deftest is]]
             [calendar.model :as c]
             [calendar.validate :as v]))
 

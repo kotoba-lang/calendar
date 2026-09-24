@@ -13,8 +13,8 @@
   and what `every-core-in-src-is-declared` holds against the directory. One
   list, three uses: a core cannot be regenerated but ungated, or gated but
   never regenerated."
-  (:require [clojure.java.io :as io]
-            [clojure.pprint :as pp]
+  (:require [kotoba.io :as io]
+            [kotoba.pprint :as pp]
             [calendar.kotoba-oracle :as oracle]
             [kotoba.compiler.core :as compiler])
   (:gen-class))
@@ -38,7 +38,7 @@
   (let [out (io/file "resources" (oracle/resource-path id))]
     (io/make-parents out)
     (spit out (with-out-str (pp/pprint (compile-kir source-path))))
-    (.getPath out)))
+    (io/path out)))
 
 (defn regenerate-all! []
   (mapv (fn [[id source]] (write-artifact! id source)) (sort-by key oracle/cores)))

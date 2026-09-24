@@ -49,7 +49,7 @@
   ordering agrees with the integer ordering is ISO-8601's property and is not
   what this test checks."
   (:require [calendar.model :as model]
-            [clojure.test :refer [deftest is testing]]
+            [kotoba.test :refer [deftest is testing]]
             [kotoba.compiler.core :as compiler]
             ;; The interpreter used to live inside the compiler as
             ;; `kotoba.compiler.ir`; it moved out to `kotoba-lang/kotoba-kir`

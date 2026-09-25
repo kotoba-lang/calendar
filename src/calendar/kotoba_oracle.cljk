@@ -37,7 +37,7 @@
   delegation dropped, without something failing."
   (:require [kotoba.lang.edn :as edn]
             [kotoba.kir :as ir]
-            #?(:clj [clojure.java.io :as io])))
+            #?(:clj [kotoba.io :as io])))
 
 (def cores
   "Oracle id -> the .kotoba it was compiled from, under src/.

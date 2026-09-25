@@ -23,7 +23,7 @@
   So both gates here take their subject list from data in the seam
   (`oracle/cores`, `oracle/delegated`) rather than from names typed here, and
   a third gate requires that data to cover what is on disk."
-  (:require [calendar.kotoba-oracle :as oracle]
+  (:require [kotoba.lang.error :as kerror] [calendar.kotoba-oracle :as oracle]
             [calendar.kotoba-oracle-gen :as gen]
             [calendar.model :as model]
             [calendar.validate :as validate]
@@ -114,9 +114,9 @@
 (deftest a-missing-artifact-throws-rather-than-deciding-anything
   ;; The seam's one refusal. If it fell back instead, the first thing anyone
   ;; would notice is that a decision quietly stopped being the shipped one.
-  (is (thrown-with-msg? clojure.lang.ExceptionInfo #"shipped decision core is missing"
+  (is (thrown-with-msg? kerror/ExceptionInfo #"shipped decision core is missing"
                         (oracle/kir :not-a-core)))
-  (is (thrown-with-msg? clojure.lang.ExceptionInfo #"does not declare that export"
+  (is (thrown-with-msg? kerror/ExceptionInfo #"does not declare that export"
                         (oracle/param-types :model 'not-an-export))))
 
 ;; ── the record both cores speak ──────────────────────────────────────

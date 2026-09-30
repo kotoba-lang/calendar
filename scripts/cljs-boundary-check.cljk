@@ -65,7 +65,7 @@
                      :occupies-time (validate/occupies-time? (ev 0 10))
                      :occupies-nothing (validate/occupies-time? (ev 10 10))
                      :problem-codes (mapv :calendar/code (validate/event-problems (ev 10 10)))})"
-        out (str "/tmp/calendar-cljs-boundary-" (.getTime (js/Date.)) ".cljs")]
+        out (str "/tmp/calendar-cljs-boundary-" (.getTime (js/Date.)) ".cljk")]
     (fs/writeFileSync out probe)
     (try
       (let [result (-> (cp/execSync (str "kbb --backend sci --classpath '" classpath "' " out)
